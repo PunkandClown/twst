@@ -31,7 +31,7 @@ public class Controllers {
 
         System.out.println(offal);
 
-        String pathname = "C:\\Users\\rasbw\\Desktop\\students\\css";
+        String pathname = "C://Users/rasbw/Desktop/students/css";
         String cssFileName = "CSS1.css";
 
         File dir = new File(pathname);
@@ -43,7 +43,7 @@ public class Controllers {
         Document html = Jsoup.connect("https://raw.githubusercontent.com/PunkandClown/test/main/index.html")
                 .get();
 
-        html.getElementsByTag("link").attr("href", "\\css" + "\\" + cssFileName);
+        html.getElementsByTag("link").attr("href", "css" + "/" + cssFileName);
 
         System.out.println(html);
 
@@ -54,10 +54,16 @@ public class Controllers {
 
     @GetMapping("/view")
     @ResponseBody
-    public String view(){
+    public String view() throws IOException {
         /// FIXME: 14.01.2021
         //Юзер из url
         String user = "PunkandClown";
+        String directoryPath = "test";
+//        Document directory = Jsoup.connect("https://raw.githubusercontent.com/" + user + "/" + directoryPath).get();
+//        System.out.println(directory.select("a.js-navigation-open link-gray-dark"));
+
+
+
 
 
         return "s";
