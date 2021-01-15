@@ -54,7 +54,7 @@ public class Controllers {
         return html.toString();
     }
 
-
+    String pathname = "C:/Users/rasbw/Desktop/students/users/";
 
     @GetMapping("/view/{user}/{directoryPath}")
     @ResponseBody
@@ -73,11 +73,9 @@ public class Controllers {
         List<String> pathList = new ArrayList<>(Arrays.asList(path.split("/")));
         String cssFileName = pathList.get(pathList.size()-1);
 
-
         Document css = Jsoup.connect("https://raw.githubusercontent.com/" + user + "/" + directoryPath + "/main/" + cssFileName).get();
 
-        String pathname = "C:/Users/rasbw/Desktop/students/users/" + user;
-        File dir = new File(pathname);
+        File dir = new File(pathname + user);
         if(!dir.exists()){
             dir.mkdirs();
         }
