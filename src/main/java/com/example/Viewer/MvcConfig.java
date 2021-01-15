@@ -15,8 +15,8 @@ public class MvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("css/**")
-                .addResourceLocations("file:///C:/Users/rasbw/Desktop/students/css/").setCachePeriod(0);
+        registry.addResourceHandler("users/**")
+                .addResourceLocations("file:///C:/Users/rasbw/Desktop/students/users/").setCachePeriod(0);
     }
 
 }

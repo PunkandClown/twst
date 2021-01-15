@@ -21,42 +21,7 @@ import java.util.regex.Pattern;
 public class ViewerApplication {
 
 	public static void main(String[] args) throws IOException {
-		//SpringApplication.run(ViewerApplication.class, args);
-
-		String user = "PunkandClown";
-		String directoryPath = "test";
-		//Document directory = Jsoup.connect("https://github.com/" + user + "/" + directoryPath).get();
-
-		//System.out.println(directory.select("a[title].js-navigation-open").text());
-
-		Document index = Jsoup.connect("https://raw.githubusercontent.com/" + user + "/" + directoryPath + "/main/index.html").get();
-
-		String path = index.select("link[href]").attr("href");
-
-		List<String> pathList = new ArrayList<>(Arrays.asList(path.split("/")));
-		String cssFileName = pathList.get(pathList.size()-1);
-
-		System.out.println(cssFileName);
-
-		String pathname = "C:/Users/rasbw/Desktop/students/css/" + user;
-
-		Document css = Jsoup.connect("https://raw.githubusercontent.com/" + user + "/" + directoryPath + "/main/" + cssFileName).get();
-
-		File dir = new File(pathname);
-		if(!dir.exists()){
-			dir.mkdirs();
-		}
-
-		File cssFile = new File(dir,cssFileName);
-		FileWriter writer = new FileWriter(cssFile);
-		writer.write(css.text());
-		writer.close();
-
-		index.getElementsByTag("link").attr("href", "css/" + user + "/" + cssFileName);
-
-		System.out.println(index);
-
-
+		SpringApplication.run(ViewerApplication.class, args);
 	}
 
 }
