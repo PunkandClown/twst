@@ -12,9 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,40 +23,11 @@ import java.util.regex.Pattern;
 @Controller
 public class Controllers {
 
-    @GetMapping("/greeting")
-    @ResponseBody
-    public String greeting() throws IOException {
-
-        Document css = Jsoup.connect("https://raw.githubusercontent.com/PunkandClown/test/main/CSS1.css")
-                .get();
-
-        String offal = css.text();
-
-        System.out.println(offal);
-
-        String pathname = "C://Users/rasbw/Desktop/students/css";
-        String cssFileName = "CSS1.css";
-
-        File dir = new File(pathname);
-        File file2 = new File(dir,cssFileName);
-        FileWriter writer = new FileWriter(file2);
-        writer.write(offal);
-        writer.close();
-
-        Document html = Jsoup.connect("https://raw.githubusercontent.com/PunkandClown/test/main/index.html")
-                .get();
-
-        html.getElementsByTag("link").attr("href", "css" + "/" + cssFileName);
-
-        System.out.println(html);
-
-        return html.toString();
-    }
-
     String pathname = "C:/Users/rasbw/Desktop/students/users/";
 
     @GetMapping("/view/{user}/{directoryPath}")
     @ResponseBody
+
     public String view(@PathVariable String user, @PathVariable String directoryPath) throws IOException {
 
 //        Document directory = Jsoup.connect("https://raw.githubusercontent.com/" + user + "/" + directoryPath).get();
@@ -86,8 +56,37 @@ public class Controllers {
 
         index.getElementsByTag("link").attr("href", "/users/" + user + "/" + cssFileName);
 
+        String src = index.select("img[src]").attr("src");
+
+        System.out.println(src);
+
+        List<String> imgPathList = new ArrayList<>(Arrays.asList(src.split("/")));
+        String imgFileName = imgPathList.get(imgPathList.size()-1);
+
+        String imageUrl = "https://raw.githubusercontent.com/" + user + "/" + directoryPath + "/main/" + imgFileName;
+        imageDownloader(imageUrl, user, imgFileName, pathname);
+
+        index.getElementsByTag("img").attr("src", "/users/" + user + "/" + imgFileName);
+
         System.out.println(index);
 
         return index.toString();
+
+    }
+
+    public static void imageDownloader(String imageUrl, String user, String imgName, String pathname) throws IOException {
+
+        URL url = new URL(imageUrl);
+
+        InputStream is = url.openStream();
+        byte[] buffer = new byte[12430];
+        int n = -1;
+
+        OutputStream os =
+                new FileOutputStream(  pathname + "/" + user + "/" + imgName );
+        while ( (n = is.read(buffer)) != -1 ){
+            os.write(buffer, 0, n);
+        }
+        os.close();
     }
 }
