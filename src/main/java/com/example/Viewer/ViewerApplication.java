@@ -1,7 +1,9 @@
 package com.example.Viewer;
 
+import jdk.nashorn.internal.objects.NativeString;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -16,34 +18,23 @@ public class ViewerApplication {
 
 	public static void main(String[] args) throws IOException {
 
-		SpringApplication.run(ViewerApplication.class, args);
+		//SpringApplication.run(ViewerApplication.class, args);
 
-//		try {
-//			Document index = Jsoup.connect(
-//					"https://raw.githubusercontent.com/PunkandClown/test/main/br/html/index.html").get();
-//
-//			String path = index.select("link[href]").select("[rel^=stylesheet]").attr("href");
-//			System.out.println(path);
-//
-//			if(!path.equals("")){
-//				List<String> pathList = new ArrayList<>(Arrays.asList(path.split("/")));
-//				String cssFileName = pathList.get(pathList.size() - 1);
-//				System.out.println(cssFileName);
-//			}
-//
-//
-//		} catch (IOException e){
-//			System.out.println("fff");
-//		}
 
-//		String linkStylePath = "bread/cssfol.cs";
-//		List<String> pathList = new ArrayList<>(Arrays.asList(linkStylePath.split("/")));
-//		String cssFileName = pathList.get(pathList.size() - 1);
-//		System.out.println(cssFileName);
-//
-//		if(cssFileName.contains(".css")){
-//			System.out.println("yes");
-//		}
+		try {
+			Document index = Jsoup.connect(
+					"https://raw.githubusercontent.com/PunkandClown/test/main/br/index.html").get();
+
+			Elements imageElements = index.getElementsByTag("link");
+
+			Controllers.urlSubstitute(index, imageElements, "href", "https://raw.githubusercontent.com/PunkandClown/test/main/br/CSS", "PunkandClown");
+
+			System.out.println(index);
+		} catch (IOException e){
+			System.out.println("fff");
+		}
+
+
 
 	}
 }

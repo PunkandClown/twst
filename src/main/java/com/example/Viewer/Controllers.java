@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 @Controller
 public class Controllers {
 
-    String pathname = "C:/Users/rasbw/Desktop/viewerbase/users/";
+    static String pathname = "C:/Users/user/Desktop/viewerbase/users/";
 
     @GetMapping("/view/{user}/{directory}/{branch}/{task}/{page}")
     @ResponseBody
@@ -72,10 +72,9 @@ public class Controllers {
                     index.getElementsByTag("link").first().attr("href", "/users/" + user + "/" + cssFileName);
                 }
             }
+
             Elements aElements = index.getElementsByTag("a");
             for (Element aElement : aElements){
-
-
             }
 
             Elements imageElements = index.getElementsByTag("img");
@@ -102,7 +101,27 @@ public class Controllers {
         } catch (IOException e) {
             return "html not found";
         }
+    }
+        //page img/link/a  src/href/href branch user
+    public static String urlSubstitute(Document index, Elements elements, String link, String url, String user) throws IOException {
+        for (Element element : elements) {
 
+            String href = element.attr(link);
+            String fileName = href.substring(href.lastIndexOf("/"));
+            Document document = Jsoup.connect(url + fileName).get();
+
+            File dir = new File(pathname + user);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            File file = new File(dir, fileName);
+            FileWriter writer = new FileWriter(file);
+            writer.write(document.text());
+            writer.close();
+
+            element.attr(link, "/users/" + user + fileName);
+        }
+        return index.toString();
     }
 
     public static void imageDownloader(String imageUrl, String user, String imgName, String pathname) throws IOException {
