@@ -2,6 +2,8 @@ package com.example.Viewer;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -23,54 +25,83 @@ import java.util.regex.Pattern;
 @Controller
 public class Controllers {
 
-    String pathname = "C:/Users/rasbw/Desktop/students/users/";
+    String pathname = "C:/Users/rasbw/Desktop/viewerbase/users/";
 
-    @GetMapping("/view/{user}/{directoryPath}")
+    @GetMapping("/view/{user}/{directory}/{branch}/{task}/{page}")
     @ResponseBody
 
-    public String view(@PathVariable String user, @PathVariable String directoryPath) throws IOException {
+    public String view(@PathVariable String user,
+                       @PathVariable String directory,
+                       @PathVariable String branch,
+                       @PathVariable String task,
+                       @PathVariable String page) throws IOException {
+        try {
+            Document index = Jsoup.connect(
+                    "https://raw.githubusercontent.com/"
+                            + user + "/"
+                            + directory + "/"
+                            + branch + "/"
+                            + task + "/"
+                            + page ).get();
 
-//        Document directory = Jsoup.connect("https://raw.githubusercontent.com/" + user + "/" + directoryPath).get();
-//        System.out.println(directory.select("a.js-navigation-open link-gray-dark"));
+            String linkStylePath = index.select("link[href]").select("[rel^=stylesheet]").attr("href");
 
-        //Document directory = Jsoup.connect("https://github.com/" + user + "/" + directoryPath).get();
+            if (!linkStylePath.equals("")) {
 
-        //System.out.println(directory.select("a[title].js-navigation-open").text());
+                List<String> pathList = new ArrayList<>(Arrays.asList(linkStylePath.split("/")));
+                String cssFileName = pathList.get(pathList.size() - 1);
 
-        Document index = Jsoup.connect("https://raw.githubusercontent.com/" + user + "/" + directoryPath + "/main/index.html").get();
+                if(cssFileName.contains(".css")){
 
-        String path = index.select("link[href]").attr("href");
-        List<String> pathList = new ArrayList<>(Arrays.asList(path.split("/")));
-        String cssFileName = pathList.get(pathList.size()-1);
+                    Document css = Jsoup.connect(
+                            "https://raw.githubusercontent.com/"
+                                    + user + "/"
+                                    + directory + "/"
+                                    + branch + "/"
+                                    + task + "/CSS/" + cssFileName).get();
 
-        Document css = Jsoup.connect("https://raw.githubusercontent.com/" + user + "/" + directoryPath + "/main/" + cssFileName).get();
+                    File dir = new File(pathname + user);
+                    if (!dir.exists()) {
+                        dir.mkdirs();
+                    }
+                    File cssFile = new File(dir, cssFileName);
+                    FileWriter writer = new FileWriter(cssFile);
+                    writer.write(css.text());
+                    writer.close();
 
-        File dir = new File(pathname + user);
-        if(!dir.exists()){
-            dir.mkdirs();
+                    index.getElementsByTag("link").first().attr("href", "/users/" + user + "/" + cssFileName);
+                }
+            }
+            Elements aElements = index.getElementsByTag("a");
+            for (Element aElement : aElements){
+
+
+            }
+
+            Elements imageElements = index.getElementsByTag("img");
+
+            for (Element imgElement : imageElements) {
+
+                String src = imgElement.attr("src");
+                List<String> imgPathList = new ArrayList<>(Arrays.asList(src.split("/")));
+                String imgFileName = imgPathList.get(imgPathList.size() - 1);
+
+                String imageUrl =
+                        "https://raw.githubusercontent.com/" + user + "/"
+                                + directory + "/"
+                                + branch + "/"
+                                + task + "/img/"
+                                + imgFileName;
+
+                imageDownloader(imageUrl, user, imgFileName, pathname);
+                index.getElementsByTag("img").attr("src", "/users/" + user + "/" + imgFileName);
+            }
+            System.out.println(index);
+            return index.toString();
+
+        } catch (IOException e) {
+            return "html not found";
         }
-        File cssFile = new File(dir,cssFileName);
-        FileWriter writer = new FileWriter(cssFile);
-        writer.write(css.text());
-        writer.close();
-
-        index.getElementsByTag("link").attr("href", "/users/" + user + "/" + cssFileName);
-
-        String src = index.select("img[src]").attr("src");
-
-        System.out.println(src);
-
-        List<String> imgPathList = new ArrayList<>(Arrays.asList(src.split("/")));
-        String imgFileName = imgPathList.get(imgPathList.size()-1);
-
-        String imageUrl = "https://raw.githubusercontent.com/" + user + "/" + directoryPath + "/main/" + imgFileName;
-        imageDownloader(imageUrl, user, imgFileName, pathname);
-
-        index.getElementsByTag("img").attr("src", "/users/" + user + "/" + imgFileName);
-
-        System.out.println(index);
-
-        return index.toString();
 
     }
 
@@ -83,8 +114,8 @@ public class Controllers {
         int n = -1;
 
         OutputStream os =
-                new FileOutputStream(  pathname + "/" + user + "/" + imgName );
-        while ( (n = is.read(buffer)) != -1 ){
+                new FileOutputStream(pathname + "/" + user + "/" + imgName);
+        while ((n = is.read(buffer)) != -1) {
             os.write(buffer, 0, n);
         }
         os.close();

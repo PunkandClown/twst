@@ -2,37 +2,48 @@ package com.example.Viewer;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+ // <link rel="stylesheet" type="text/css" href="bread/bread/cssfol.css">
 @SpringBootApplication
 public class ViewerApplication {
 
 	public static void main(String[] args) throws IOException {
+
 		SpringApplication.run(ViewerApplication.class, args);
 
-		//Document img = Jsoup.connect("https://raw.githubusercontent.com/PunkandClown/test/main/img.jpg").get();
-
-//		String pathname = "C:/Users/rasbw/Desktop/students/users/PunkandClown";
-//		File dir = new File(pathname);
-//		if(!dir.exists()){
-//			dir.mkdirs();
+//		try {
+//			Document index = Jsoup.connect(
+//					"https://raw.githubusercontent.com/PunkandClown/test/main/br/html/index.html").get();
+//
+//			String path = index.select("link[href]").select("[rel^=stylesheet]").attr("href");
+//			System.out.println(path);
+//
+//			if(!path.equals("")){
+//				List<String> pathList = new ArrayList<>(Arrays.asList(path.split("/")));
+//				String cssFileName = pathList.get(pathList.size() - 1);
+//				System.out.println(cssFileName);
+//			}
+//
+//
+//		} catch (IOException e){
+//			System.out.println("fff");
 //		}
-//		File cssFile = new File(dir,"img.jpg");
-//		FileWriter writer = new FileWriter(cssFile);
-//		writer.write(img.text());
-//		writer.close();
+
+//		String linkStylePath = "bread/cssfol.cs";
+//		List<String> pathList = new ArrayList<>(Arrays.asList(linkStylePath.split("/")));
+//		String cssFileName = pathList.get(pathList.size() - 1);
+//		System.out.println(cssFileName);
+//
+//		if(cssFileName.contains(".css")){
+//			System.out.println("yes");
+//		}
+
 	}
 }
