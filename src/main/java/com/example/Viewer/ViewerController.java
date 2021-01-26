@@ -1,5 +1,6 @@
 package com.example.Viewer;
 
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -11,6 +12,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.apache.tomcat.util.http.fileupload.IOUtils.copy;
 
 @Controller
 public class ViewerController {
@@ -24,7 +30,7 @@ public class ViewerController {
                        @PathVariable String directory,
                        @PathVariable String branch,
                        @PathVariable String task,
-                       @PathVariable String page){
+                       @PathVariable String page) {
 
         String url = "https://raw.githubusercontent.com/"
                 + user + "/"
@@ -32,31 +38,23 @@ public class ViewerController {
                 + branch + "/"
                 + task + "/";
         try {
-            Document index = Jsoup.connect( url + page ).get();
+            Document index = Jsoup.connect(url + page).get();
 
             Elements css = index.getElementsByTag("link");
             urlSubstitute(css, "href", url + "CSS", user);
 
             Elements aElements = index.getElementsByTag("a");
-            for (Element aElement : aElements){
+            for (Element aElement : aElements) {
                 String href = aElement.attr("href");
-                if(href.contains("/")){
+                if (href.contains("/")) {
                     String fileName = href.substring(href.lastIndexOf("/"));
                     aElement.attr("href", fileName);
                 }
             }
 
             Elements imageElements = index.getElementsByTag("img");
-            for (Element imgElement : imageElements) {
+            urlSubstitute(imageElements, "src", url + "img", user);
 
-                String src = imgElement.attr("src");
-                String fileName = src.substring(src.lastIndexOf("/"));
-
-                String imageUrl = url + "img/" + fileName;
-
-                imageDownloader(imageUrl, user, fileName, pathname);
-                imgElement.attr("src", "/users/" + user + fileName);
-            }
 
             return index.toString();
 
@@ -66,38 +64,28 @@ public class ViewerController {
     }
 
     public static void urlSubstitute(Elements elements, String link, String url, String user) throws IOException {
+
         for (Element element : elements) {
 
             String href = element.attr(link);
             String fileName = href.substring(href.lastIndexOf("/"));
-            Document document = Jsoup.connect(url + fileName).get();
 
-            File dir = new File(pathname + user);
-            if (!dir.exists()) {
-                dir.mkdirs();
+            URL URL = new URL(url + fileName);
+
+            InputStream is = URL.openStream();
+
+            byte[] buffer = new byte[12430];
+            int n = -1;
+
+            OutputStream os =
+                    new FileOutputStream(pathname + "/" + user + fileName);
+
+            while ((n = is.read(buffer)) != -1) {
+                os.write(buffer, 0, n);
             }
-            File file = new File(dir, fileName);
-            FileWriter writer = new FileWriter(file);
-            writer.write(document.text());
-            writer.close();
+            os.close();
 
             element.attr(link, "/users/" + user + fileName);
         }
-    }
-
-    public static void imageDownloader(String imageUrl, String user, String imgName, String pathname) throws IOException {
-
-        URL url = new URL(imageUrl);
-
-        InputStream is = url.openStream();
-        byte[] buffer = new byte[12430];
-        int n = -1;
-
-        OutputStream os =
-                new FileOutputStream(pathname + "/" + user + "/" + imgName);
-        while ((n = is.read(buffer)) != -1) {
-            os.write(buffer, 0, n);
-        }
-        os.close();
     }
 }

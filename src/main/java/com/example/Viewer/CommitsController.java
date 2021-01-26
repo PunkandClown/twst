@@ -30,6 +30,7 @@ public class CommitsController {
             String result = element.select("[data-pjax]").select(".link-gray-dark").attr("href").replaceAll("\n", "");
             String str = element.select("[data-pjax]").select(".link-gray-dark").text();
             String url = "https://raw.githubusercontent.com" +result.replaceAll("/commit", "") + "/" + task + "/index.html";
+
             if(!result.equals("") && !str.equals("")){
                 sb.append("{" + "\"URL\":" + '\"' + url + "\",");
                 sb.append( "\"Commit\":" + '\"' + str + "\"},\n");
