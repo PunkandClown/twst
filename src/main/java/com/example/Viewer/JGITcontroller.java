@@ -3,7 +3,12 @@ package com.example.Viewer;
 import com.example.models.FileModel;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevTree;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -31,8 +36,12 @@ public class JGITcontroller {
     }
 
     @ResponseBody
-    @GetMapping(value = {"/persons/{student}", "/persons/{student}/{repo}","/persons/{student}/{repo}" })
-    public List<FileModel> variable(@PathVariable String student, @PathVariable Optional<String> repo) throws GitAPIException, IOException {
+    @GetMapping(value = {"/persons/{student}", "/persons/{student}/{repo}","/persons/{student}/{repo}/{lastCommit}" })
+    public List<FileModel> variable(
+            @PathVariable String student,
+            @PathVariable Optional<String> repo,
+            @PathVariable Optional<String> lastCommit) throws GitAPIException, IOException {
+
         if (!repo.isPresent()){
             File dirs = new File("C:\\repositories\\" + student);
             Optional<File[]> optionalFileList = Optional.ofNullable(dirs.listFiles());
@@ -41,7 +50,7 @@ public class JGITcontroller {
                             .map(File -> new FileModel(File.getName(), "/persons/" + File.getName()))
                             .forEach(returned::add));
             return returned;
-        } else {
+        } else if(!lastCommit.isPresent()){
             Repository existingRepo = new FileRepositoryBuilder()
                     .setGitDir(new File("C:\\repositories\\" + student + "\\" + repo.get()))
                     .build();
@@ -53,5 +62,22 @@ public class JGITcontroller {
             return returned;
         }
 
+        if (lastCommit.isPresent()){
+            Repository existingRepo = new FileRepositoryBuilder()
+                    .setGitDir(new File("C:\\repositories\\" + student + "\\" + repo.get() + "\\" + lastCommit))
+                    .readEnvironment()
+                    .findGitDir()
+                    .setMustExist(true)
+                    .build();
+
+            ObjectId lastCommitId = existingRepo.resolve(Constants.HEAD);
+
+            try (RevWalk revWalk = new RevWalk(existingRepo)) {
+                RevCommit commit = revWalk.parseCommit(lastCommitId);
+                RevTree tree = commit.getTree();
+                System.out.println("Having tree: " + tree);
+            }
+        }
+        return null;
     }
 }
