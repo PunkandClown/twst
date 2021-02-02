@@ -62,6 +62,7 @@ public class JGITcontroller {
             return returned;
         }
 
+
         if (lastCommit.isPresent()){
             Repository existingRepo = new FileRepositoryBuilder()
                     .setGitDir(new File("C:\\repositories\\" + student + "\\" + repo.get() + "\\" + lastCommit))
