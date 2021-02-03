@@ -2,6 +2,9 @@ package com.example.Viewer;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.dircache.DirCacheBuildIterator;
+import org.eclipse.jgit.dircache.DirCacheIterator;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.Repository;
@@ -28,18 +31,47 @@ public class ViewerApplication {
         RevCommit next = call.iterator().next();
 
         Repository repository = git.getRepository();
-        RevCommit revCommit = repository.parseCommit(next.getTree());
+        RevCommit revCommit = repository.parseCommit(next);
+
+        TreeWalk treeWalk = new TreeWalk(repository);
+        treeWalk.addTree(revCommit.getTree());
+        treeWalk.setRecursive(false);
+        //treeWalk.setFilter(PathFilter.create("src"));
+
+//        while (treeWalk.next()){
+//            System.out.println(
+//                    treeWalk.getPathString());
+//        }
+
+        String path = "src/main/resources";
+        String[] split = path.split("/");
+        int iterator = 0;
+        while (treeWalk.next()) {
+            if (treeWalk.isSubtree()) {
+                if (treeWalk.getNameString().equals(split[iterator])) {
+                    treeWalk.enterSubtree();
+                    iterator++;
+                    if (iterator == split.length) {
+                        while (treeWalk.next()) {
+                            System.out.println(treeWalk.getNameString());
+                        }
+                    }
+                }
+
+            }
+        }
+
 
     }
 
-    public static Object walker(TreeWalk treeWalk) throws IOException {
-
+    public static Object walker(Repository repo, TreeWalk treeWalk) throws IOException {
         while (treeWalk.next()) {
             if (treeWalk.isSubtree()) {
                 treeWalk.enterSubtree();
                 while (treeWalk.next()) {
                     if (treeWalk.isSubtree()) {
-                        System.out.println("----folder---- " + treeWalk.getPathString());
+                        DirCache i = repo.lockDirCache();
+                        return new DirCacheIterator(i);
                     } else {
                         System.out.println(treeWalk.getNameString());
                     }
@@ -48,6 +80,6 @@ public class ViewerApplication {
                 System.out.println(treeWalk.getNameString());
             }
         }
-        return "D";
+        return "s";
     }
 }
