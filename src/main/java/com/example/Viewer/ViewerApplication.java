@@ -7,6 +7,7 @@ import org.eclipse.jgit.dircache.DirCacheBuildIterator;
 import org.eclipse.jgit.dircache.DirCacheIterator;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
+import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
@@ -36,50 +37,33 @@ public class ViewerApplication {
         TreeWalk treeWalk = new TreeWalk(repository);
         treeWalk.addTree(revCommit.getTree());
         treeWalk.setRecursive(false);
-        //treeWalk.setFilter(PathFilter.create("src"));
 
 //        while (treeWalk.next()){
-//            System.out.println(
-//                    treeWalk.getPathString());
+//            System.out.println(treeWalk.getNameString());
 //        }
 
-        String path = "src/main/resources";
+        String path = "src/";
         String[] split = path.split("/");
-        int iterator = 0;
-        while (treeWalk.next()) {
-            if (treeWalk.isSubtree()) {
-                if (treeWalk.getNameString().equals(split[iterator])) {
-                    treeWalk.enterSubtree();
-                    iterator++;
-                    if (iterator == split.length) {
-                        while (treeWalk.next()) {
-                            System.out.println(treeWalk.getNameString());
-                        }
-                    }
-                }
 
-            }
+        for (String s : split) {
+            walker(treeWalk, s);
         }
-
-
+        while (treeWalk.next()){
+            if (treeWalk.getPathString().split("/").length > split.length)
+                System.out.println(treeWalk.getNameString());
+        }
     }
-
-    public static Object walker(Repository repo, TreeWalk treeWalk) throws IOException {
+    public static TreeWalk walker(TreeWalk treeWalk, String str) throws IOException {
         while (treeWalk.next()) {
             if (treeWalk.isSubtree()) {
-                treeWalk.enterSubtree();
-                while (treeWalk.next()) {
-                    if (treeWalk.isSubtree()) {
-                        DirCache i = repo.lockDirCache();
-                        return new DirCacheIterator(i);
-                    } else {
-                        System.out.println(treeWalk.getNameString());
-                    }
+                if (treeWalk.getNameString().equals(str)) {
+                    treeWalk.enterSubtree();
+                    return treeWalk;
                 }
             } else {
-                System.out.println(treeWalk.getNameString());
+                ObjectReader objectReader = treeWalk.getObjectReader();
             }
         }
-        return "s";
+        return null;
     }
 }
