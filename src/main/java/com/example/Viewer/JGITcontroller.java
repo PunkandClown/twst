@@ -55,9 +55,9 @@ public class JGITcontroller {
         return null;
     }
 
-    @GetMapping(value = {"/persons/{student}/{repo}/git" , "/persons/{student}/{repo}/git/{commit}"})
+    @GetMapping(value = {"/persons/{student}/{repo}/git", "/persons/{student}/{repo}/git/{commit}"})
     @ResponseBody
-    public Object Jgit(
+    public Object jgit(
             @PathVariable String student,
             @PathVariable Optional<String> repo,
             @PathVariable Optional<String> commit,
@@ -67,43 +67,44 @@ public class JGITcontroller {
 
         Iterable<RevCommit> call = git.log().call();
 
-        RevCommit next = call.iterator().next();
-
-        Optional<RevCommit> targetCommit = StreamSupport
-                .stream(call.spliterator(), false)
-                .filter(cit -> cit.getName().equals(commit.orElse(next.getName()))).findFirst();
-
-        Repository repository = git.getRepository();
-        RevCommit revCommit = repository.parseCommit(targetCommit.orElse(next));
-
-        TreeWalk treeWalk = new TreeWalk(repository);
-        treeWalk.addTree(revCommit.getTree());
-        treeWalk.setRecursive(false);
-
         List<String> stringList = new ArrayList<>();
 
-        if(!map.isPresent()){
-         call.forEach(cit -> stringList.add(cit.getShortMessage() + "----" + cit.getName()));
-        }
-        if (map.isPresent() && map.get().equals("")) {
-            while (treeWalk.next()) {
-                stringList.add(treeWalk.getNameString());
-            }
+        if (!map.isPresent() && !commit.isPresent()) {
+            call.forEach(cit -> stringList.add(cit.getShortMessage() + "----" + cit.getName()));
         } else {
-            String[] split = map.orElse("").split("/");
-            for (String str : split) {
-                walker(treeWalk, str, map.orElse(""));
-            }
-            if (!treeWalk.isSubtree() && treeWalk.getPathString().equals(map.orElse(""))){
-                ObjectId objectId = treeWalk.getObjectId(0);
-                ObjectLoader loader = repository.open(objectId);
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                loader.copyTo(stream);
-                return stream.toString();
-            }
-            while (treeWalk.next()) {
-                if (treeWalk.getPathString().split("/").length > split.length) {
+            RevCommit next = call.iterator().next();
+
+            Optional<RevCommit> targetCommit = StreamSupport
+                    .stream(call.spliterator(), false)
+                    .filter(cit -> cit.getName().equals(commit.orElse(next.getName()))).findFirst();
+
+            Repository repository = git.getRepository();
+            RevCommit revCommit = repository.parseCommit(targetCommit.orElse(next));
+            TreeWalk treeWalk = new TreeWalk(repository);
+            treeWalk.addTree(revCommit.getTree());
+            treeWalk.setRecursive(false);
+
+
+            if (map.isPresent() && map.get().equals("")) {
+                while (treeWalk.next()) {
                     stringList.add(treeWalk.getNameString());
+                }
+            } else {
+                String[] split = map.orElse("").split("/");
+                for (String str : split) {
+                    walker(treeWalk, str, map.orElse(""));
+                }
+                if (!treeWalk.isSubtree() && treeWalk.getPathString().equals(map.orElse(""))) {
+                    ObjectId objectId = treeWalk.getObjectId(0);
+                    ObjectLoader loader = repository.open(objectId);
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    loader.copyTo(stream);
+                    return stream.toString();
+                }
+                while (treeWalk.next()) {
+                    if (treeWalk.getPathString().split("/").length > split.length) {
+                        stringList.add(treeWalk.getNameString());
+                    }
                 }
             }
         }
